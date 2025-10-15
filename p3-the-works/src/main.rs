@@ -96,6 +96,7 @@ fn parse_closure(
         eval_block::<WithoutDebug>(engine_state, &mut stack, &block, PipelineData::empty())
             .map_err(Box::new)?;
     result
+        .body
         .into_value(Span::unknown())
         .map_err(Box::new)?
         .into_closure()
@@ -136,6 +137,7 @@ fn eval_closure(
     stack.add_var(var_id, Value::int(job_number as i64, Span::unknown()));
 
     eval_block_with_early_return::<WithoutDebug>(engine_state, stack, block, input)
+        .map(|exec_data| exec_data.body)
         .map_err(Box::new)
 }
 
@@ -285,31 +287,31 @@ fn setup_ctrlc_handler(
             interrupt.store(true, Ordering::Relaxed);
 
             // Kill and remove all active jobs
-            if let Err(err) = {
-                match engine_state.jobs.lock() {
-                    Ok(mut jobs_guard) => {
-                        let mut first_error = Ok(());
+            let kill_result = match engine_state.jobs.lock() {
+                Ok(mut jobs_guard) => {
+                    let mut first_error = Ok(());
 
-                        // Collect job IDs first
-                        let job_ids: Vec<_> = jobs_guard.iter().map(|(id, _)| id).collect();
+                    // Collect job IDs first
+                    let job_ids: Vec<_> = jobs_guard.iter().map(|(id, _)| id).collect();
 
-                        for id in job_ids {
-                            // Call kill_and_remove for each job ID
-                            if let Err(err) = jobs_guard.kill_and_remove(id) {
-                                if first_error.is_ok() {
-                                    first_error = Err(err);
-                                }
+                    for id in job_ids {
+                        // Call kill_and_remove for each job ID
+                        if let Err(err) = jobs_guard.kill_and_remove(id) {
+                            if first_error.is_ok() {
+                                first_error = Err(err);
                             }
                         }
-
-                        first_error
                     }
-                    Err(poisoned) => Err(std::io::Error::other(format!(
-                        "Jobs mutex poisoned: {}",
-                        poisoned
-                    ))),
+
+                    first_error
                 }
-            } {
+                Err(poisoned) => {
+                    eprintln!("Jobs mutex poisoned: {}", poisoned);
+                    Ok(())
+                }
+            };
+
+            if let Err(err) = kill_result {
                 eprintln!("Error killing jobs: {:?}", err);
             }
 

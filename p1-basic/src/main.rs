@@ -57,8 +57,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &block,
         PipelineData::empty(),
     ) {
-        Ok(pipeline_data) => {
-            for value in pipeline_data {
+        Ok(exec_data) => {
+            for value in exec_data.body {
                 print_result(value);
             }
         }

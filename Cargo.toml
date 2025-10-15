@@ -8,12 +8,12 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-nu-cli = "0.104"
-nu-command = "0.104"
-nu-protocol = "0.104"
-nu-cmd-lang = "0.104"
-nu-engine = "0.104"
-nu-parser = "0.104"
+nu-cli = "0.108"
+nu-command = "0.108"
+nu-protocol = "0.108"
+nu-cmd-lang = "0.108"
+nu-engine = "0.108"
+nu-parser = "0.108"
 
 # Testing dependencies shared across packages
 assert_cmd = "2.0"

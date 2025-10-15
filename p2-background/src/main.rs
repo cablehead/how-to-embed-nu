@@ -105,7 +105,7 @@ fn run_script_in_background(
                 &block,
                 PipelineData::empty(),
             ) {
-                Ok(pipeline_data) => match pipeline_data.into_value(Span::test_data()) {
+                Ok(exec_data) => match exec_data.body.into_value(Span::test_data()) {
                     Ok(value) => print_result(value),
                     Err(err) => eprintln!("Error converting pipeline data: {:?}", err),
                 },

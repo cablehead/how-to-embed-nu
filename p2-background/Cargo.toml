@@ -12,7 +12,7 @@ nu-protocol = { workspace = true }
 nu-cmd-lang = { workspace = true }
 nu-engine = { workspace = true }
 nu-parser = { workspace = true }
-nu-system = "0.104"
+nu-system = "0.108"
 tokio = { version = "1.28", features = ["full"] }
 crossterm = "0.27"
 ctrlc = "3.4"

@@ -14,7 +14,7 @@ use nu_parser::parse;
 use nu_protocol::ast::Block;
 use nu_protocol::debugger::WithoutDebug;
 use nu_protocol::engine::{EngineState, Stack, StateWorkingSet};
-use nu_protocol::{format_shell_error, PipelineData, ShellError, Span, Value};
+use nu_protocol::{format_cli_error, PipelineData, ShellError, Span, Value};
 use std::sync::Arc;
 
 /// Bootstrap a Nushell `EngineState` that exposes _only_ the "filters" command
@@ -117,6 +117,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &block,
         PipelineData::empty(),
     )?
+    .body
     .into_value(Span::unknown())?;
 
     print_result(out);
@@ -140,7 +141,7 @@ fn parse_checked_block<'a>(
             help: Some("Is the command you're trying to use available in the sandbox?".into()),
             inner: vec![],
         };
-        return Err(format_shell_error(&working_set, &shell_error).into());
+        return Err(format_cli_error(&working_set, &shell_error, None).into());
     }
 
     if let Some(err) = working_set.compile_errors.first() {
@@ -151,7 +152,7 @@ fn parse_checked_block<'a>(
             help: Some("This may reference a command not available in this sandbox.".into()),
             inner: vec![],
         };
-        return Err(format_shell_error(&working_set, &shell_error).into());
+        return Err(format_cli_error(&working_set, &shell_error, None).into());
     }
 
     Ok((block, working_set))
